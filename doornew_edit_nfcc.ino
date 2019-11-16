@@ -1,3 +1,8 @@
+//CODE BY ATHULKRISHNA>S
+//
+
+
+
 #include <Blynk.h>
 
 
@@ -23,8 +28,7 @@ char ssid[] = "hlo1";
 char pass[] = "1231231234";
 #define ACCESS_DELAY 2000
 #define DENIED_DELAY 1000
-// This function will be called every time Slider Widget
-// in Blynk app writes values to the Virtual Pin V1
+
 MFRC522 mfrc522(SS_PIN, RST_PIN);   // Create MFRC522 instance.
 
 
@@ -34,7 +38,7 @@ WidgetTerminal terminal(V40);
 
 void Open()
 {
-  // Invert state, since button is "Active LOW"
+
   int isButtonPressed = !digitalRead(1);
   int butt = digitalRead(1);
   if (isButtonPressed && butt == HIGH) {
@@ -46,8 +50,6 @@ void Open()
     digitalWrite(D7, HIGH); 
     terminal.println("AUTO UNLOCK");
 
-    // Note:
-    //   We allow 1 notification per 5 seconds for now.
   }
 
    else {
@@ -96,7 +98,7 @@ BLYNK_WRITE(V1)
     digitalWrite(D7, HIGH);
   }
   
-  // process received value
+
 }
 
 
@@ -117,8 +119,8 @@ void repeatMe() {
   {
     return;
   }
-  //Show UID on serial monitor
-  Serial.print("UID tag :");
+  //Show UID on terminal monitor
+  terminal.print("UID tag :");
   String content= "";
   byte letter;
   for (byte i = 0; i < mfrc522.uid.size; i++) 
@@ -167,7 +169,7 @@ void repeatMe() {
 
 BLYNK_WRITE(V2)
 {
-  int pinValuea = param.asInt(); // assigning incoming value from pin V1 to a variable
+  int pinValuea = param.asInt(); // assigning incoming value from pin V2 to a variable
   if (pinValuea = HIGH) {
     digitalWrite(D6, HIGH);
     digitalWrite(D7, LOW);
@@ -180,7 +182,7 @@ BLYNK_WRITE(V2)
     digitalWrite(D7, HIGH);
   }
   
-  // process received value
+
 }
 void setup()
 {
