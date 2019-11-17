@@ -6,8 +6,9 @@
 #include <Blynk.h>
 
 
-#define BLYNK_PRINT Serial
-
+//#define BLYNK_PRINT Serial
+#include <TimeLib.h>
+//#include <WidgetRTC.h>
 #include <SPI.h>
 #include <MFRC522.h>
 #include <SimpleTimer.h> 
@@ -17,7 +18,7 @@
 
 #define SS_PIN D4
 #define RST_PIN D3
-SimpleTimer timer;
+
 // You should get Auth Token in the Blynk App.
 // Go to the Project Settings (nut icon).
 char auth[] = "-hPnVq5cjXpbpbLvKB_QKAA8LPv0y0jS";
@@ -29,6 +30,10 @@ char pass[] = "1231231234";
 #define ACCESS_DELAY 2000
 #define DENIED_DELAY 1000
 
+BlynkTimer timer;
+
+//WidgetRTC rtc;
+
 MFRC522 mfrc522(SS_PIN, RST_PIN);   // Create MFRC522 instance.
 
 
@@ -36,47 +41,47 @@ WidgetTerminal terminal(V40);
 
 
 
-void Open()
+
+
+
+
+
+
+
+
+
+
+void sendvalue()
 {
+  int aab = digitalRead(D1);
+  Blynk.virtualWrite(V12,aab);
 
-  int isButtonPressed = !digitalRead(1);
-  int butt = digitalRead(1);
-  if (isButtonPressed && butt == HIGH) {
-    
-    digitalWrite(D6, HIGH);
-    digitalWrite(D7, LOW);
-    delay(200);
-    digitalWrite(D6, HIGH); 
-    digitalWrite(D7, HIGH); 
-    terminal.println("AUTO UNLOCK");
-
-  }
-
-   else {
-    digitalWrite(D6, LOW);
-    digitalWrite(D7, HIGH);
-    delay(200);
-    digitalWrite(D6, HIGH); 
-    digitalWrite(D7, HIGH); 
-    terminal.println("AUTO LOCK");
-   }
 }
 
 
 
 
+BLYNK_WRITE(V13)
+{ int avala = digitalRead(D1);
+  int pinValuez = param.asInt(); // assigning incoming value from pin V1 to a variable
+  if (pinValuez == HIGH && avala == LOW ) {
+    
+    Blynk.virtualWrite(V30,1);
+    delay(10);
+    Blynk.virtualWrite(V30,0);
+    
+  }
+
+  if (pinValuez == HIGH && avala == HIGH ) {
+    
+    Blynk.virtualWrite(V31,1);
+    delay(10);
+    Blynk.virtualWrite(V31,0);
+    
+  }
 
 
-
-
-
-
-
-
-
-
-
-
+}
 
 
 
@@ -92,7 +97,8 @@ BLYNK_WRITE(V1)
     delay(200);
     digitalWrite(D6, HIGH); 
     digitalWrite(D7, HIGH);
-    terminal.println("LOCKED");   
+    terminal.println("LOCKED");
+    terminal.flush();   
   } else {
     digitalWrite(D6, HIGH);
     digitalWrite(D7, HIGH);
@@ -145,6 +151,8 @@ void repeatMe() {
   if (content.substring(1) == "C5 94 7C 69" && but == HIGH) //change here the UID of the card/cards that you want to give access
   {
     terminal.println("Authorized access via rfid UNLOCKED");
+    terminal.flush();   
+
     digitalWrite(D6, HIGH);
     digitalWrite(D7, LOW);
     delay(200);
@@ -176,7 +184,9 @@ BLYNK_WRITE(V2)
     delay(200);
     digitalWrite(D6, HIGH);
     digitalWrite(D7, HIGH);
-    terminal.println("UNLOCKED");    
+    terminal.println("UNLOCKED"); 
+    terminal.flush();   
+   
   } else {
     digitalWrite(D6, HIGH);
     digitalWrite(D7, HIGH);
@@ -202,6 +212,7 @@ void setup()
   mfrc522.PCD_Init();   // Initiate MFRC522
  
   Serial.println("Put your card to the reader...");
+  terminal.clear();
 
 
 
@@ -211,8 +222,14 @@ void setup()
 
 
 
-  attachInterrupt(digitalPinToInterrupt(1), Open, CHANGE);
   timer.setInterval(10, repeatMe);
+
+
+
+
+
+  timer.setInterval(10, sendvalue);
+
 
 
 
