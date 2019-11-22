@@ -8,7 +8,6 @@
 
 //#define BLYNK_PRINT Serial
 #include <TimeLib.h>
-//#include <WidgetRTC.h>
 #include <SPI.h>
 #include <MFRC522.h>
 #include <SimpleTimer.h> 
@@ -18,6 +17,14 @@
 
 #define SS_PIN D4
 #define RST_PIN D3
+#define relaypina D2
+#define relaypinb D0
+
+#define sensorpin D1
+
+
+
+
 
 // You should get Auth Token in the Blynk App.
 // Go to the Project Settings (nut icon).
@@ -32,7 +39,6 @@ char pass[] = "1231231234";
 
 BlynkTimer timer;
 
-//WidgetRTC rtc;
 
 MFRC522 mfrc522(SS_PIN, RST_PIN);   // Create MFRC522 instance.
 
@@ -53,7 +59,7 @@ WidgetTerminal terminal(V40);
 
 void sendvalue()
 {
-  int aab = digitalRead(D1);
+  int aab = digitalRead(sensorpin);
   Blynk.virtualWrite(V12,aab);
 
 }
@@ -62,7 +68,7 @@ void sendvalue()
 
 
 BLYNK_WRITE(V13)
-{ int avala = digitalRead(D1);
+{ int avala = digitalRead(sensorpin);
   int pinValuez = param.asInt(); // assigning incoming value from pin V1 to a variable
   if (pinValuez == HIGH && avala == LOW ) {
     
@@ -92,16 +98,16 @@ BLYNK_WRITE(V1)
 {
   int pinValue = param.asInt(); // assigning incoming value from pin V1 to a variable
   if (pinValue = HIGH) {
-    digitalWrite(D6, LOW);
-    digitalWrite(D7, HIGH);
+    digitalWrite(relaypina, LOW);
+    digitalWrite(relaypinb, HIGH);
     delay(200);
-    digitalWrite(D6, HIGH); 
-    digitalWrite(D7, HIGH);
+    digitalWrite(relaypina, HIGH); 
+    digitalWrite(relaypinb, HIGH);
     terminal.println("LOCKED");
     terminal.flush();   
   } else {
-    digitalWrite(D6, HIGH);
-    digitalWrite(D7, HIGH);
+    digitalWrite(relaypina, HIGH);
+    digitalWrite(relaypinb, HIGH);
   }
   
 
@@ -113,7 +119,7 @@ BLYNK_WRITE(V1)
 
 
 void repeatMe() {
-  int but = digitalRead(1);
+  int but = digitalRead(sensorpin);
   
   // Look for new cards
   if ( ! mfrc522.PICC_IsNewCardPresent()) 
@@ -142,22 +148,22 @@ void repeatMe() {
   if (content.substring(1) == "C5 94 7C 69" && but == LOW) //change here the UID of the card/cards that you want to give access
   {
     terminal.println("Authorized access via rfid LOCKED");
-    digitalWrite(D6, LOW);
-    digitalWrite(D7, HIGH);
+    digitalWrite(relaypina, LOW);
+    digitalWrite(relaypinb, HIGH);
     delay(200);
-    digitalWrite(D6, HIGH); 
-    digitalWrite(D7, HIGH);
+    digitalWrite(relaypina, HIGH); 
+    digitalWrite(relaypinb, HIGH);
   }
   if (content.substring(1) == "C5 94 7C 69" && but == HIGH) //change here the UID of the card/cards that you want to give access
   {
     terminal.println("Authorized access via rfid UNLOCKED");
     terminal.flush();   
 
-    digitalWrite(D6, HIGH);
-    digitalWrite(D7, LOW);
+    digitalWrite(relaypina, HIGH);
+    digitalWrite(relaypinb, LOW);
     delay(200);
-    digitalWrite(D6, HIGH); 
-    digitalWrite(D7, HIGH);
+    digitalWrite(relaypina, HIGH); 
+    digitalWrite(relaypinb, HIGH);
   }
  
 }
@@ -179,28 +185,28 @@ BLYNK_WRITE(V2)
 {
   int pinValuea = param.asInt(); // assigning incoming value from pin V2 to a variable
   if (pinValuea = HIGH) {
-    digitalWrite(D6, HIGH);
-    digitalWrite(D7, LOW);
+    digitalWrite(relaypina, HIGH);
+    digitalWrite(relaypinb, LOW);
     delay(200);
-    digitalWrite(D6, HIGH);
-    digitalWrite(D7, HIGH);
+    digitalWrite(relaypina, HIGH);
+    digitalWrite(relaypinb, HIGH);
     terminal.println("UNLOCKED"); 
     terminal.flush();   
    
   } else {
-    digitalWrite(D6, HIGH);
-    digitalWrite(D7, HIGH);
+    digitalWrite(relaypina, HIGH);
+    digitalWrite(relaypinb, HIGH);
   }
   
 
 }
 void setup()
 {
-  pinMode(D7, OUTPUT);
-  pinMode(D6, OUTPUT);
-  pinMode(D1, INPUT);
-  digitalWrite(D6, HIGH);
-  digitalWrite(D7, HIGH);
+  pinMode(relaypina, OUTPUT);
+  pinMode(relaypinb, OUTPUT);
+  pinMode(sensorpin, INPUT);
+  digitalWrite(relaypina, HIGH);
+  digitalWrite(relaypinb, HIGH);
   // Debug console
   Serial.begin(9600);
 
