@@ -116,7 +116,18 @@ BLYNK_WRITE(V1)
 }
 
 
+void boot() {
 
+  if (WiFi.status() = !WL_CONNECTED) {
+    
+  }
+ 
+
+
+
+
+
+}
 void wifisig() {
 
   if (WiFi.status() = WL_CONNECTED) {
@@ -280,7 +291,7 @@ void setup()
 
   timer.setInterval(10, sendvalue);
   timer.setInterval(1000, wifisig);
-
+  timer.setInterval(2000, boot);
 
 
 
