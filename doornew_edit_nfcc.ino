@@ -118,17 +118,53 @@ BLYNK_WRITE(V1)
 
 void boot() {
 
-  if (WiFi.status() = !WL_CONNECTED) {
+  if (WiFi.status() != WL_CONNECTED) {
+    return;
     
   }
  
-
-
-
+  if (WiFi.status() = WL_CONNECTED) {
+    return;
+    
+  }
+  delay(20);
+  lcd.print(4, 0, "BOOTING"); // use: (position X: 0-15, position Y: 0-1, "Message you want to print")
+  lcd.print(12, 0, "UP")
+  lcd.print(1, 1, "A")
+  Delay(330);
+  lcd.print(2, 1, "T")
+  Delay(330);
+  lcd.print(3, 1, "H")
+  Delay(330);
+  lcd.print(4, 1, "U")
+  Delay(330);
+  lcd.print(5, 1, "L")
+  Delay(330);
+  lcd.print(6, 1, "K")
+  Delay(330);
+  lcd.print(7, 1, "R")
+  Delay(330);
+  lcd.print(8, 1, "I")
+  Delay(330);
+  lcd.print(9, 1, "S")
+  Delay(330);
+  lcd.print(10, 1, "H")
+  Delay(330);
+  lcd.print(11, 1, "N")
+  Delay(330);
+  lcd.print(12, 1, "A")
+  Delay(330);
+  lcd.print(13, 1, ".")
+  Delay(330);
+  lcd.print(14, 1, "S")
+  Delay(330);
+  
+  lcd.clear();
 
 
 }
 void wifisig() {
+  
 
   if (WiFi.status() = WL_CONNECTED) {
     long rssi = WiFi.RSSI();
@@ -242,39 +278,8 @@ void setup()
   lcd.clear();
   terminal.clear();
   Terminal.println("Put your card to the reader...");
-  Delay(1000);
-  lcd.print(4, 0, "BOOTING"); // use: (position X: 0-15, position Y: 0-1, "Message you want to print")
-  lcd.print(12, 0, "UP")
-  lcd.print(1, 1, "A")
-  Delay(330);
-  lcd.print(2, 1, "T")
-  Delay(330);
-  lcd.print(3, 1, "H")
-  Delay(330);
-  lcd.print(4, 1, "U")
-  Delay(330);
-  lcd.print(5, 1, "L")
-  Delay(330);
-  lcd.print(6, 1, "K")
-  Delay(330);
-  lcd.print(7, 1, "R")
-  Delay(330);
-  lcd.print(8, 1, "I")
-  Delay(330);
-  lcd.print(9, 1, "S")
-  Delay(330);
-  lcd.print(10, 1, "H")
-  Delay(330);
-  lcd.print(11, 1, "N")
-  Delay(330);
-  lcd.print(12, 1, "A")
-  Delay(330);
-  lcd.print(13, 1, ".")
-  Delay(330);
-  lcd.print(14, 1, "S")
-  Delay(330);
   
-  lcd.clear();
+
 
 
 
