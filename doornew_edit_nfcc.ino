@@ -48,6 +48,7 @@ WidgetTerminal terminal(V40);
 
 
 
+WidgetLCD lcd(V100);
 
 
 
@@ -104,6 +105,7 @@ BLYNK_WRITE(V1)
     digitalWrite(relaypina, HIGH); 
     digitalWrite(relaypinb, HIGH);
     terminal.println("LOCKED");
+    lcd.print(4, 0, "STATUS:LOCKED")
     terminal.flush();   
   } else {
     digitalWrite(relaypina, HIGH);
@@ -115,8 +117,17 @@ BLYNK_WRITE(V1)
 
 
 
+void wifisig() {
 
-
+  if (WiFi.status() = WL_CONNECTED) {
+    long rssi = WiFi.RSSI();
+    Serial.print("RSSI:");
+    
+    lcd.print(2, 1, "Signal:")
+    lcd.print(8, 1, rssi);
+  }
+ 
+}
 
 void repeatMe() {
   int but = digitalRead(sensorpin);
@@ -190,7 +201,8 @@ BLYNK_WRITE(V2)
     delay(200);
     digitalWrite(relaypina, HIGH);
     digitalWrite(relaypinb, HIGH);
-    terminal.println("UNLOCKED"); 
+    terminal.println("UNLOCKED");
+    lcd.print(2, 0, "STATUS:UNLOCKED")
     terminal.flush();   
    
   } else {
@@ -216,10 +228,13 @@ void setup()
   //Blynk.begin(auth, ssid, pass, IPAddress(192,168,1,100), 8080);
   SPI.begin();          // Initiate  SPI bus
   mfrc522.PCD_Init();   // Initiate MFRC522
- 
-  Serial.println("Put your card to the reader...");
+  lcd.clear();
   terminal.clear();
-
+  Terminal.println("Put your card to the reader...");
+  lcd.print(4, 0, "BOOTING"); // use: (position X: 0-15, position Y: 0-1, "Message you want to print")
+  lcd.print(4, 1, "UP")
+  Delay(5000);
+  lcd.clear();
 
 
 
@@ -235,6 +250,7 @@ void setup()
 
 
   timer.setInterval(10, sendvalue);
+  timer.setInterval(1000, wifisig);
 
 
 
