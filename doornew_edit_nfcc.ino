@@ -121,7 +121,7 @@ void wifisig() {
 
   if (WiFi.status() = WL_CONNECTED) {
     long rssi = WiFi.RSSI();
-    Serial.print("RSSI:");
+    
     
     lcd.print(2, 1, "Signal:")
     lcd.print(8, 1, rssi);
@@ -231,8 +231,23 @@ void setup()
   lcd.clear();
   terminal.clear();
   Terminal.println("Put your card to the reader...");
+  Delay(1000);
   lcd.print(4, 0, "BOOTING"); // use: (position X: 0-15, position Y: 0-1, "Message you want to print")
-  lcd.print(4, 1, "UP")
+  lcd.print(12, 0, "UP")
+  lcd.print(1, 1, "A")
+  lcd.print(2, 1, "T")
+  lcd.print(3, 1, "H")
+  lcd.print(4, 1, "U")
+  lcd.print(5, 1, "L")
+  lcd.print(6, 1, "K")
+  lcd.print(7, 1, "R")
+  lcd.print(8, 1, "I")
+  lcd.print(9, 1, "S")
+  lcd.print(10, 1, "H")
+  lcd.print(11, 1, "N")
+  lcd.print(12, 1, "A")
+  lcd.print(13, 1, ".")
+  lcd.print(14, 1, "S")
   Delay(5000);
   lcd.clear();
 
