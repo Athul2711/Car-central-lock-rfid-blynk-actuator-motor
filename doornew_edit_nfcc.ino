@@ -132,31 +132,31 @@ void boot() {
   lcd.print(12, 0, "UP")
   lcd.print(1, 1, "A")
   Delay(330);
-  lcd.print(2, 1, "T")
+  lcd.print(1, 1, "AT")
   Delay(330);
-  lcd.print(3, 1, "H")
+  lcd.print(1, 1, "ATH")
   Delay(330);
-  lcd.print(4, 1, "U")
+  lcd.print(1, 1, "ATHU")
   Delay(330);
-  lcd.print(5, 1, "L")
+  lcd.print(1, 1, "ATHUL")
   Delay(330);
-  lcd.print(6, 1, "K")
+  lcd.print(1, 1, "ATHULK")
   Delay(330);
-  lcd.print(7, 1, "R")
+  lcd.print(1, 1, "ATHULKR")
   Delay(330);
-  lcd.print(8, 1, "I")
+  lcd.print(1, 1, "ATHULKRI")
   Delay(330);
-  lcd.print(9, 1, "S")
+  lcd.print(1, 1, "ATHULKRIS")
   Delay(330);
-  lcd.print(10, 1, "H")
+  lcd.print(1, 1, "ATHULKRISH")
   Delay(330);
-  lcd.print(11, 1, "N")
+  lcd.print(1, 1, "ATHULKRISHN")
   Delay(330);
-  lcd.print(12, 1, "A")
+  lcd.print(1, 1, "ATHULKRISHNA")
   Delay(330);
-  lcd.print(13, 1, ".")
+  lcd.print(1, 1, "ATHULKRISHNA.")
   Delay(330);
-  lcd.print(14, 1, "S")
+  lcd.print(1, 1, "ATHULKRISHNA.S")
   Delay(330);
   
   lcd.clear();
@@ -323,6 +323,9 @@ void setup()
 
 void loop()
 {
-  timer.run();
-  Blynk.run();
+  if (WiFi.status() = WL_CONNECTED){
+
+    Blynk.run();
+  }
+  Timer.run();
 }
