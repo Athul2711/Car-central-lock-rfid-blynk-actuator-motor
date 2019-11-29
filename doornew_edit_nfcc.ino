@@ -28,14 +28,16 @@
 
 // You should get Auth Token in the Blynk App.
 // Go to the Project Settings (nut icon).
-char auth[] = "-aUTH TOKEN";
+char auth[] = "auth token";
 
 // Your WiFi credentials.
 // Set password to "" for open networks.
-char ssid[] = "hlo1";
-char pass[] = "1231231234";
-#define ACCESS_DELAY 2000
-#define DENIED_DELAY 1000
+char ssid[] = "SSID";
+char pass[] = "PASSWORD";
+char ACCESS_KEY[] = "09 97 3D 59";
+char ACCESS_CARD[] = "C7 46 62 40";
+
+
 
 BlynkTimer timer;
 
@@ -105,7 +107,8 @@ BLYNK_WRITE(V1)
     digitalWrite(relaypina, HIGH); 
     digitalWrite(relaypinb, HIGH);
     terminal.println("LOCKED");
-    lcd.print(4, 0, "STATUS:LOCKED")
+    lcd.clear();
+    lcd.print(1, 0, "STATUS:LOCKED");
     terminal.flush();   
   } else {
     digitalWrite(relaypina, HIGH);
@@ -116,61 +119,14 @@ BLYNK_WRITE(V1)
 }
 
 
-void boot() {
-
-  if (WiFi.status() != WL_CONNECTED) {
-    return;
-    
-  }
- 
-  if (WiFi.status() = WL_CONNECTED) {
-    return;
-    
-  }
-  delay(20);
-  lcd.print(4, 0, "BOOTING"); // use: (position X: 0-15, position Y: 0-1, "Message you want to print")
-  lcd.print(12, 0, "UP")
-  lcd.print(1, 1, "A")
-  Delay(330);
-  lcd.print(1, 1, "AT")
-  Delay(330);
-  lcd.print(1, 1, "ATH")
-  Delay(330);
-  lcd.print(1, 1, "ATHU")
-  Delay(330);
-  lcd.print(1, 1, "ATHUL")
-  Delay(330);
-  lcd.print(1, 1, "ATHULK")
-  Delay(330);
-  lcd.print(1, 1, "ATHULKR")
-  Delay(330);
-  lcd.print(1, 1, "ATHULKRI")
-  Delay(330);
-  lcd.print(1, 1, "ATHULKRIS")
-  Delay(330);
-  lcd.print(1, 1, "ATHULKRISH")
-  Delay(330);
-  lcd.print(1, 1, "ATHULKRISHN")
-  Delay(330);
-  lcd.print(1, 1, "ATHULKRISHNA")
-  Delay(330);
-  lcd.print(1, 1, "ATHULKRISHNA.")
-  Delay(330);
-  lcd.print(1, 1, "ATHULKRISHNA.S")
-  Delay(330);
-  
-  lcd.clear();
-
-
-}
 void wifisig() {
   
 
-  if (WiFi.status() = WL_CONNECTED) {
+  if (WiFi.status() == WL_CONNECTED) {
     long rssi = WiFi.RSSI();
     
     
-    lcd.print(2, 1, "Signal:")
+    lcd.print(2, 1, "Signal:");
     lcd.print(8, 1, rssi);
   }
  
@@ -195,15 +151,17 @@ void repeatMe() {
   byte letter;
   for (byte i = 0; i < mfrc522.uid.size; i++) 
   {
-     Terminal.print(mfrc522.uid.uidByte[i] < 0x10 ? " 0" : " ");
-     Terminal.print(mfrc522.uid.uidByte[i], HEX);
+     terminal.print(mfrc522.uid.uidByte[i] < 0x10 ? " 0" : " ");
+     terminal.print(mfrc522.uid.uidByte[i], HEX);
+     Serial.print(mfrc522.uid.uidByte[i] < 0x10 ? " 0" : " ");
+     Serial.print(mfrc522.uid.uidByte[i], HEX);
      content.concat(String(mfrc522.uid.uidByte[i] < 0x10 ? " 0" : " "));
      content.concat(String(mfrc522.uid.uidByte[i], HEX));
   }
   Serial.println();
   Serial.print("Message : ");
   content.toUpperCase();
-  if (content.substring(1) == "C5 94 7C 69" && but == LOW) //change here the UID of the card/cards that you want to give access
+  if (content.substring(1) == ACCESS_KEY && but == LOW) //change here the UID of the card/cards that you want to give access
   {
     terminal.println("Authorized access via rfid LOCKED");
     digitalWrite(relaypina, LOW);
@@ -211,8 +169,9 @@ void repeatMe() {
     delay(200);
     digitalWrite(relaypina, HIGH); 
     digitalWrite(relaypinb, HIGH);
+    delay(2000);
   }
-  if (content.substring(1) == "C5 94 7C 69" && but == HIGH) //change here the UID of the card/cards that you want to give access
+  if (content.substring(1) == ACCESS_KEY && but == HIGH) //change here the UID of the card/cards that you want to give access
   {
     terminal.println("Authorized access via rfid UNLOCKED");
     terminal.flush();   
@@ -222,13 +181,41 @@ void repeatMe() {
     delay(200);
     digitalWrite(relaypina, HIGH); 
     digitalWrite(relaypinb, HIGH);
+    delay(2000);
   }
+
+
+
+  if (content.substring(1) == ACCESS_CARD && but == HIGH) //change here the UID of the card/cards that you want to give access
+  {
+    terminal.println("Authorized access via rfid UNLOCKED");
+    terminal.flush();   
+
+    digitalWrite(relaypina, HIGH);
+    digitalWrite(relaypinb, LOW);
+    delay(200);
+    digitalWrite(relaypina, HIGH); 
+    digitalWrite(relaypinb, HIGH);
+    delay(2000);
+  }
+
+  if (content.substring(1) == ACCESS_CARD && but == LOW) //change here the UID of the card/cards that you want to give access
+  {
+    terminal.println("Authorized access via rfid LOCKED");
+    digitalWrite(relaypina, LOW);
+    digitalWrite(relaypinb, HIGH);
+    delay(200);
+    digitalWrite(relaypina, HIGH); 
+    digitalWrite(relaypinb, HIGH);
+    delay(2000);
+
+  }
+
  
 }
   
 
     
-
 
 
 
@@ -249,8 +236,11 @@ BLYNK_WRITE(V2)
     digitalWrite(relaypina, HIGH);
     digitalWrite(relaypinb, HIGH);
     terminal.println("UNLOCKED");
-    lcd.print(2, 0, "STATUS:UNLOCKED")
-    terminal.flush();   
+    lcd.clear();
+    
+    lcd.print(1, 0, "STATUS:UNLOCKED");
+    terminal.flush();  
+     
    
   } else {
     digitalWrite(relaypina, HIGH);
@@ -277,7 +267,7 @@ void setup()
   mfrc522.PCD_Init();   // Initiate MFRC522
   lcd.clear();
   terminal.clear();
-  Terminal.println("Put your card to the reader...");
+  terminal.println("Put your card to the reader...");
   
 
 
@@ -296,9 +286,6 @@ void setup()
 
   timer.setInterval(10, sendvalue);
   timer.setInterval(1000, wifisig);
-  timer.setInterval(2000, boot);
-
-
 
 
 
@@ -323,9 +310,9 @@ void setup()
 
 void loop()
 {
-  if (WiFi.status() = WL_CONNECTED){
+  if (WiFi.status() == WL_CONNECTED){
 
     Blynk.run();
   }
-  Timer.run();
+  timer.run();
 }
