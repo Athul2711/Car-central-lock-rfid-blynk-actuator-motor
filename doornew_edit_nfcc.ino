@@ -28,12 +28,12 @@
 
 // You should get Auth Token in the Blynk App.
 // Go to the Project Settings (nut icon).
-char auth[] = "auth token";
+char auth[] = "-hPnVq5cjXpbpbLvKB_QKAA8LPv0y0jS";
 
 // Your WiFi credentials.
 // Set password to "" for open networks.
-char ssid[] = "SSID";
-char pass[] = "PASSWORD";
+char ssid[] = "hlo1";
+char pass[] = "1231231234";
 char ACCESS_KEY[] = "09 97 3D 59";
 char ACCESS_CARD[] = "C7 46 62 40";
 
@@ -56,15 +56,27 @@ WidgetLCD lcd(V100);
 
 
 
-
-
-
-
 void sendvalue()
 {
   int aab = digitalRead(sensorpin);
   Blynk.virtualWrite(V12,aab);
+}
 
+
+
+void sendvaluea()
+{
+
+  if (pinValuez == HIGH){
+    lcd.clear();
+    lcd.print(1, 0, "STATUS:UNLOCKED");
+
+  }
+  if (pinValuez == LOW){
+    lcd.clear();
+    lcd.print(1, 0, "STATUS:LOCKED");
+
+  }
 }
 
 
@@ -131,6 +143,14 @@ void wifisig() {
   }
  
 }
+void ini() {
+  
+  mfrc522.PCD_Init();   // Initiate MFRC522
+
+    
+
+}
+
 
 void repeatMe() {
   int but = digitalRead(sensorpin);
@@ -278,15 +298,17 @@ void setup()
 
 
 
-  timer.setInterval(10, repeatMe);
+  timer.setInterval(100, repeatMe);
+
+
+  timer.setInterval(2000, sendvaluea);
 
 
 
-
-
-  timer.setInterval(10, sendvalue);
+  timer.setInterval(100, sendvalue);
   timer.setInterval(1000, wifisig);
 
+  timer.setInterval(2000, ini);
 
 
 
