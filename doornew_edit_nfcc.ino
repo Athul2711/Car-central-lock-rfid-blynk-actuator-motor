@@ -121,14 +121,14 @@ int atk = LOW;
 int valuaa = HIGH;
 // You should get Auth Token in the Blynk App.
 // Go to the Project Settings (nut icon).
-char auth[] = "qbZbJK2pM9-35lAhV2RixqkH0AGZCLHM";
+char auth[] = "#######################";
 
 // Your WiFi credentials.
 // Set password to "" for open networks.
-char ssid[] = "hlo12";
-char ssidd[] = "car";
+char ssid[] = "########";
+char ssidd[] = "#######";
 
-char passs[] = "1231231234";
+char passs[] = "############";
 char ACCESS_KEY[] = "09 97 3D 59";
 char ACCESS_CARD[] = "C7 46 62 40";
 
