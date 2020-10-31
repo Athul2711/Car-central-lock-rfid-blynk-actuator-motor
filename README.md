@@ -5,7 +5,7 @@ CIRCUIT in instructables athulkrishna2711 page
 
 
 features  (updated on 31 oct 2020 )
-
+unlockes all locks if driver side lock is unlocked
 unlock car via blynk
 unlock car via local html (new)
 timer based car unlocking like unlocking on 8 am and locking on night you can set it like setting an alarm 
