@@ -38,7 +38,7 @@ DallasTemperature sensors(&oneWire);
 #define BLYNK_TEMPLATE_ID "TMPLESEHgkrh"
 #define BLYNK_DEVICE_NAME "CAR"
 
-#define BLYNK_FIRMWARE_VERSION        "0.1.7"
+#define BLYNK_FIRMWARE_VERSION        "0.1.9"
 
 #define BLYNK_PRINT Serial
 //#define BLYNK_DEBUG
@@ -62,7 +62,7 @@ unsigned long  unlockcodep = 0;
 
 
 
-int whitel = 0 , redl = 0, greenl = 0 , bluel = 0 , twored = 0 ,twogreen = 0 , twoblue = 0 , twowhite = 0;
+int whitel = 0 , redl = 0, greenl = 0 , bluel = 0 , twored = 0 , twogreen = 0 , twoblue = 0 , twowhite = 0;
 
 
 
@@ -121,6 +121,10 @@ typedef struct struct_message {
   int datac;
   unsigned long datad;
   unsigned long datae;
+  int dataf;
+  float x;
+  float y;
+  float z;
 } struct_message;
 
 struct_message myData;
@@ -130,7 +134,7 @@ struct_message incomingReadings;
 uint8_t broadcastAddress[] = {0x48, 0x3F, 0xDA, 0xA3, 0x77, 0xB7};
 
 
-uint8_t broadcastAddress2[] = {0x48, 0x3F, 0xDA, 0xA3, 0x77, 0xa3};
+uint8_t broadcastAddress2[] = {0xCC, 0x50, 0xE3, 0x40, 0x9E, 0xF0};
 
 //#define APP_DEBUG
 
@@ -148,627 +152,703 @@ WidgetRTC rtc;
 BlynkTimer timeraa;
 BlynkTimer timerab;
 BlynkTimer timeram;
+BlynkTimer timercarstart;
 
 WidgetTerminal terminal(V9);
 
-void gyrorun() {
+int xda, yda, zda;
+float axx, axy, axz;
+
+void gyrodatasend() {
+  if (acc == 1) {
+    mpu.update();
+    axx = mpu.getAccX();
+    axy = mpu.getAccY();
+    axz = mpu.getAccZ();
+
+    if (axx > 0) {
+      xda = axx * 250.0;
+    } else {
+      xda = axx * -250.0;
+
+    }
+
+
+    if (axy > 0) {
+      yda = axx * 250.0;
+    } else {
+      yda = axx * -250.0;
+
+    }
+    if (axz > 0) {
+      zda = axx * 250.0;
+    } else {
+      zda = axx * -250.0;
+
+    }
+
+    myData.x = ((xda + yda + zda) - 1000);
+
+
+    //
+    //
+    //  myData.x = ((sqrt((axx*axx)+(axy*axy)+(axz*axz))));
+    if (myData.x <= 0 ) {
+      myData.x = 0;
+        }
+      myData.y =   mpu.getGyroX();
+      //  myData.z = 0;
+
+      esp_now_send(broadcastAddress, (uint8_t *) &myData, sizeof(myData));
+    }
+  
+}
+  void gyrorun() {
 
 
 
 
 
 
-  if (acc == 1 && cbcbcb == 1) {
+    if (acc == 1 && cbcbcb == 1) {
 
-    byte status = mpu.begin();
+      byte status = mpu.begin();
+      //
+      //    Serial.print(F("MPU6050 status: "));
+      //    Serial.print(status);
+      //
+      //    terminal.print(F("MPU6050 status: "));
+      //    terminal.print(status);
 
-    Serial.print(F("MPU6050 status: "));
-    Serial.print(status);
-
-    terminal.print(F("MPU6050 status: "));
-    terminal.print(status);
-
-    Serial.println(F("Calculating offsets, do not move MPU6050"));
-    delay(100);
-    mpu.calcOffsets(); // gyro and accelero
-    Serial.println("Done!\n");
-
-
+      Serial.println(F("Calculating offsets, do not move MPU6050"));
+      delay(100);
+      mpu.calcOffsets(); // gyro and accelero
+      //    Serial.println("Done!\n");
 
 
-    cbcbcb = 0;
-    digitalWrite(D0, HIGH);
+
+
+      cbcbcb = 0;
+      digitalWrite(D0, HIGH);
+
+    }
+
+
+    if (acc == 0 && cbcbcb == 0) {
+      accc = 0;
+      cbcbcb = 1;
+
+      digitalWrite(D5, HIGH);
+
+
+    }
+
+
+
+    //Serial.println(acc);
+
+    if (acc == 1 && carmoving == 0) {
+      mpu.update();
+
+
+      //
+      //
+      //    if (WiFi.status() == WL_CONNECTED) {
+      //
+      //      terminal.println(mpu.getGyroX());
+      //      terminal.print("    ");
+      //
+      //      terminal.print(mpu.getGyroY());
+      //      terminal.print("    ");
+      //
+      //      terminal.print(mpu.getGyroZ());
+      //      terminal.flush();
+      //    }
+
+      if (mpu.getGyroX() > maxval ||  mpu.getGyroY() > maxval || mpu.getGyroZ() > maxval) {
+
+
+
+
+
+        carmoving = 1;
+        //
+        //
+        //Serial.println(acc);
+        //Serial.println(carmoving);
+
+
+      }
+
+      if (mpu.getGyroX() < minval ||  mpu.getGyroY() < minval || mpu.getGyroZ() < minval) {
+
+
+
+
+
+        carmoving = 1;
+
+
+
+
+      }
+
+
+    }
+
+    if (acc == 0 && carmoving == 1) {
+      carmoving = 0;
+
+      accc = 0;
+      iee = 1;
+      timeram.setTimeout(2000, abcde);
+
+
+
+      digitalWrite(D5, HIGH);
+
+
+    }
+
+
+
+  }
+
+  void abcde() {
+
+
+
+
+    iee = 0;
+  }
+
+  void blynksyca() {
+
+    Blynk.virtualWrite(V2, lockposition);
+    sensors.requestTemperatures();
+    cartemp = sensors.getTempCByIndex(0);
+    Blynk.virtualWrite(V3, cartemp);
+    Blynk.virtualWrite(V4, WiFi.RSSI());
+    Blynk.virtualWrite(V5, accvoltage * 0.021012006861);
+    Blynk.virtualWrite(V6, carmoving);
+    Blynk.virtualWrite(V8, analogRead(A0));
+  }
+
+  void warningrun() {
+
+    if (dooropen == 1 && digitalRead(D6) == 1) {
+      dooropen = 0;
+      ledonn = 1;
+      //
+      //    if (hour() > 17) {
+      //      digitalWrite(D0, LOW);
+      //      timeram.setTimeout(2000, lightsoffrun);
+
+
+
+      //    }
+
+    }
+
+
+    if (dooropen == 0 && digitalRead(D6) == 0 && ledonn == 0) {
+      dooropen = 1;
+
+
+    }
+
+    if (carmoving == 1 && digitalRead(D6) == 0) {
+
+      Mytone.Bleep(Speaker);
+      Mytone.Bleep(Speaker);
+      Mytone.Bleep(Speaker);
+    }
+
+
+
+    if (carmoving == 1 && digitalRead(D7) == 0) {
+      digitalWrite(D0, LOW);
+
+      Mytone.Bleep(Speaker);
+      Mytone.Bleep(Speaker);
+      digitalWrite(D0, HIGH);
+
+    }
+
+
+
+
+
+
+
+
 
   }
 
 
-  if (acc == 0 && cbcbcb == 0) {
-    accc = 0;
-    cbcbcb = 1;
+
+  void switchrun() {
+
+
+    if (analogRead(A0) < 50) {
+
+
+      int  atk = 1;
+
+
+      if (lockposition == 1 && atk == 1) {
+
+        unlockcode++;
+        atk = 0;
+        Mytone.Tone_Up(Speaker);
+
+      }
+
+
+      if (lockposition == 0 && atk == 1) {
+        atk = 0;
+        lockcode++;
+        Mytone.Tone_Down(Speaker);
+
+      }
+
+
+
+    }
+
+
+    if (analogRead(A0) > 275 && analogRead(A0) < 325) {
+      int attt = 1;
+      if (accc == 1 && attt == 1) {
+        accc = 0;
+        Mytone.Tone_Up(Speaker);
+        Mytone.Tone_Up(Speaker);
+        Blynk.virtualWrite(V11, 0);
+
+        attt = 0;
+
+      }
+
+      if (accc == 0 && attt == 1) {
+        accc = 1;
+        Blynk.virtualWrite(V11, 1);
+
+        Mytone.Tone_Up(Speaker);
+        Mytone.Tone_Up(Speaker);
+        Mytone.Tone_Up(Speaker);
+
+        attt = 0;
+      }
+
+
+
+    }
+
+
+
+    if (analogRead(A0) > 475 && analogRead(A0) < 525) {
+
+
+
+
+
+    }
+
+
+
+
+
+
+
+
+
+
+
+
+  }
+
+  void acofrunn() {
 
     digitalWrite(D5, HIGH);
+  }
 
-    
+
+
+  void acrunn() {
+    Serial.print("run");
+    if (accc == 1 && acc == 1) {
+
+
+      digitalWrite(D5, LOW);
+      timeram.setTimeout((actime * 1000), acofrunn);
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    }
+
+
+
+
+
+
+
+
   }
 
 
 
 
 
-  if (acc == 1 && carmoving == 0) {
-    mpu.update();
 
+
+
+
+  void timelock() {
+    if (hour() == 23 && minute() == 01) {
+      lockcode++;
+    }
+
+
+    if (hour() == 21 && minute() == 01) {
+      lockcode++;
+    }
+  }
+
+
+  void setup()
+  {
+
+
+    const char *ap_ssid = "hlo123";
+    const char *ap_password = "1231231234";
+
+
+
+
+
+    pinMode(D6, INPUT_PULLUP);
+    pinMode(D7, INPUT_PULLUP);
+    //  pinMode(D6, INPUT_PULLUP);
+    pinMode(D0, OUTPUT);
+    pinMode(D5, OUTPUT);
+    digitalWrite(D0, HIGH);
+    digitalWrite(D5, HIGH);
+
+    WiFi.mode(WIFI_AP_STA);
+
+    Serial.print("Configuring access point...");
+
+    IPAddress myIP = WiFi.softAPIP();
+    Serial.print("AP IP address: ");
+    Serial.println(myIP);
+
+
+    Serial.begin(115200);
+    delay(100);
+
+    sensors.begin();
+
+
+
+    Wire.begin();
+
+    //
+    //  EEPROM.begin(512);
+    //
+    //  acofftime = EEPROM.read(310);
+    //  actime = EEPROM.read(300);
+    //
+
+
+
+
+
+    BlynkEdgent.begin();
+
+    timeraa.setInterval(1000, gyrorun);
+
+    //  timeraa.setInterval(200, secretrun);
+
+    timeraa.setInterval(766, switchrun);
+
+
+
+
+    timeraa.setInterval(810, interiorrun);
+
+    timercarstart.setInterval(200, gyrodatasend);
+
+
+
+
+    timeraa.setInterval(3550, warningrun);
+
+    timeraa.setInterval(20000, wifireconnect);
+    timeraa.setInterval(723, datasendpulse);
+
+
+    timeraa.setInterval(4053, bulbdatasend);
+
+
+    timerId = timeraa.setInterval((acofftime * 1000), acrunn);
+
+
+    timerab.setInterval(3080, blynksyca);
+
+
+
+    timeraa.setInterval(40000, timelock);
+
+
+
+    int na = 0;
+    while (na != 3000) {
+      na++;
+      delayMicroseconds(1);
+
+      yield();
+      BlynkEdgent.run();
+
+    }
+
+
+
+    if (esp_now_init() != 0) {
+      Serial.println("Error initializing ESP-NOW");
+      return;
+    }
+
+    esp_now_set_self_role(ESP_NOW_ROLE_COMBO);
+    esp_now_register_send_cb(OnDataSent);
+
+
+
+    esp_now_add_peer(broadcastAddress, ESP_NOW_ROLE_COMBO, 1, NULL, 0);
+
+    esp_now_add_peer(broadcastAddress2, ESP_NOW_ROLE_COMBO, 1, NULL, 0);
+
+
+
+
+    esp_now_register_recv_cb(OnDataRecv);
+
+
+    setSyncInterval(10 * 60); // Sync interval in seconds (10 minutes)
+    Mytone.Imperial_March(Speaker);
+
+    //  WiFi.softAP(ap_ssid, ap_password);
+
+
+
+
+    wifi_promiscuous_enable(1);
+    wifi_set_channel(1);
+    wifi_promiscuous_enable(0);
+
+
+
+
+  }
+  void bulbdatasend() {
+
+
+
+
+
+    bulbdat.dataa = hour();
+    bulbdat.datab = minute();
+    bulbdat.datac = second();
+    bulbdat.datad = whitel;
+    bulbdat.datae = redl;
+    bulbdat.dataf = greenl;
+    bulbdat.datag = bluel;
+    bulbdat.datah = twowhite;
+
+    bulbdat.datai = twored;
+    bulbdat.dataj = twogreen;
+    bulbdat.datak = twoblue;
+
+    //
+    //
+    //
+    esp_now_send(broadcastAddress2, (uint8_t *) &bulbdat, sizeof(bulbdat));
+
+  }
+  void datasendpulse() {
+
+
+    myData.dataa = carmoving;
+    myData.datab = false;
+    myData.datac = digitalRead(D6);
+    myData.datad = lockcode;
+    myData.datae = unlockcode;
+    myData.dataf = hour();
+
+
+
+
+    esp_now_send(broadcastAddress, (uint8_t *) &myData, sizeof(myData));
+
+
+  }
+
+
+  void loop() {
+    timeraa.run();
+
+    timeram.run();
 
 
 
     if (WiFi.status() == WL_CONNECTED) {
 
-      terminal.println(mpu.getGyroX());
-      terminal.print("    ");
 
-      terminal.print(mpu.getGyroY());
-      terminal.print("    ");
+      timerab.run();
 
-      terminal.print(mpu.getGyroZ());
-      terminal.flush();
+      BlynkEdgent.run();
+
     }
 
-    if (mpu.getGyroX() > maxval ||  mpu.getGyroY() > maxval || mpu.getGyroZ() > maxval) {
 
 
-
-
-
-      carmoving = 1;
-
-
+    if (acc == 1) {
+      timercarstart.run();
 
 
     }
 
-    if (mpu.getGyroX() < minval ||  mpu.getGyroY() < minval || mpu.getGyroZ() < minval) {
+  }
 
 
 
 
 
-      carmoving = 1;
+
+
+  void wifireconnect() {
+
+    if (carmoving == 1 && digitalRead(D6) == 0) {
+
+      carmoving = 0;
+    }
+
+
+
+    if (carmoving == 1 && digitalRead(D7) == 0) {
+
+      carmoving = 0;
+    }
 
 
 
 
+    serp = 0;
+    r8 = 0;
+
+    if (WiFi.status() != WL_CONNECTED) {
+      WiFi.begin(ssidd, passs);
     }
   }
 
-  if (acc == 0 && carmoving == 1) {
-    carmoving = 0;
-
-    accc = 0;
-    iee = 1;
-    timeram.setTimeout(2000, abcde);
 
 
+  void OnDataRecv(uint8_t * mac, uint8_t *incomingData, uint8_t len) {
+    memcpy(&incomingReadings, incomingData, sizeof(incomingReadings));
+    //  Serial.print("Bytes received: ");
+    //  Serial.println(len);
 
-    digitalWrite(D5, HIGH);
+    if (incomingReadings.datae != 99) {
+      lockposition = incomingReadings.dataa;   // mpu6050
 
+      acc = incomingReadings.datab;   //secret
 
-  }
-
-
-
-}
-
-void abcde(){
-
-
+      accvoltage = incomingReadings.datac;   //door
 
 
-  iee = 0;
-}
+    } else {
+      if (ledonn == 0) {
+        digitalWrite(D0, LOW);
+        timeram.setTimeout(25000, lightsoffrun);
 
-void blynksyca() {
-
-  Blynk.virtualWrite(V2, lockposition);
-  sensors.requestTemperatures();
-  cartemp = sensors.getTempCByIndex(0);
-  Blynk.virtualWrite(V3, cartemp);
-  Blynk.virtualWrite(V4, WiFi.RSSI());
-  Blynk.virtualWrite(V5, accvoltage * 0.021012006861);
-  Blynk.virtualWrite(V6, carmoving);
-  Blynk.virtualWrite(V8, analogRead(A0));
-}
-
-void warningrun() {
-
-  if (dooropen == 1 && digitalRead(D6) == 1) {
-    dooropen = 0;
-    ledonn = 1;
-//
-//    if (hour() > 17) {
-//      digitalWrite(D0, LOW);
-//      timeram.setTimeout(2000, lightsoffrun);
+        ledonn = 1;
+      }
 
 
-
-//    }
+    }
 
   }
 
 
-  if (dooropen == 0 && digitalRead(D6) == 0 && ledonn == 0) {
-    dooropen = 1;
 
+  void OnDataSent(uint8_t *mac_addr, uint8_t sendStatus) {
+    //  Serial.print("Last Packet Send Status: ");
+    if (sendStatus == 0) {
+      //    Serial.println("Delivery success");
+    }
+    else {
+      //    Serial.println("Delivery fail");
+    }
+  }
+
+
+
+  BLYNK_CONNECTED() {
+    // Synchronize time on connection
+    rtc.begin();
 
   }
 
-  if (carmoving == 1 && digitalRead(D6) == 0) {
 
-    Mytone.Bleep(Speaker);
-    Mytone.Bleep(Speaker);
-    Mytone.Bleep(Speaker);
-  }
-
-
-
-  if (carmoving == 1 && digitalRead(D7) == 0) {
-    digitalWrite(D0, LOW);
-
-    Mytone.Bleep(Speaker);
-    Mytone.Bleep(Speaker);
+  void lightsoffrun() {
     digitalWrite(D0, HIGH);
+    ledonn = 0;
 
   }
 
+  void interiorrun() {
 
+    if (lockposition == 1 && r18 == 0 && acc == 0 && iee == 0) {
 
+      ledonn = 1;
 
-
-
-
-
-
-}
-
-
-
-void switchrun() {
-
-
-  if (analogRead(A0) < 50) {
-
-
-    int  atk = 1;
-
-
-    if (lockposition == 1 && atk == 1) {
-
-      unlockcode++;
-      atk = 0;
-      Mytone.Tone_Up(Speaker);
-
-    }
-
-
-    if (lockposition == 0 && atk == 1) {
-      atk = 0;
-      lockcode++;
-      Mytone.Tone_Down(Speaker);
-
-    }
-
-
-
-  }
-
-
-  if (analogRead(A0) > 275 && analogRead(A0) < 325) {
-int attt = 1;
-if(accc == 1 && attt == 1){
-  accc = 0;
-      Mytone.Tone_Up(Speaker);
-      Mytone.Tone_Up(Speaker);
-  Blynk.virtualWrite(V11, 0);
-
-    attt = 0;
-
-}
-
-if(accc == 0 && attt == 1){
-  accc = 1;
-    Blynk.virtualWrite(V11, 1);
-
-      Mytone.Tone_Up(Speaker);
-      Mytone.Tone_Up(Speaker);
-      Mytone.Tone_Up(Speaker);
-
-  attt = 0;
-}
-
-
-
-  }
-
-
-
-  if (analogRead(A0) > 475 && analogRead(A0) < 525) {
-
-
-
-
-
-  }
-
-
-
-
-
-
-
-
-
-
-
-
-}
-
-void acofrunn() {
-
-  digitalWrite(D5, HIGH);
-}
-
-
-
-void acrunn() {
-   Serial.print("run");
-  if (accc == 1 && acc == 1) {
-
-
-    digitalWrite(D5, LOW);
-    timeram.setTimeout((actime*1000), acofrunn);
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-  }
-
-
-
-
-
-
-
-
-}
-
-
-
-
-
-
-
-
-
-void timelock() {
-  if (hour() == 23 && minute() == 01 && second() == 01) {
-    lockcode++;
-  }
-
-
-  if (hour() == 21 && minute() == 01 && second() == 01) {
-    lockcode++;
-  }
-}
-
-
-void setup()
-{
-
-
-  const char *ap_ssid = "hlo123";
-  const char *ap_password = "1231231234";
-
-
-
-
-
-  pinMode(D6, INPUT_PULLUP);
-  pinMode(D7, INPUT_PULLUP);
-  //  pinMode(D6, INPUT_PULLUP);
-  pinMode(D0, OUTPUT);
-  pinMode(D5, OUTPUT);
-  digitalWrite(D0, HIGH);
-  digitalWrite(D5, HIGH);
-
-  WiFi.mode(WIFI_AP_STA);
-
-  Serial.print("Configuring access point...");
-
-  IPAddress myIP = WiFi.softAPIP();
-  Serial.print("AP IP address: ");
-  Serial.println(myIP);
-
-
-  Serial.begin(115200);
-  delay(100);
-
-  sensors.begin();
-
-
-
-  Wire.begin();
-
-//
-//  EEPROM.begin(512);
-//
-//  acofftime = EEPROM.read(310);
-//  actime = EEPROM.read(300);
-//
-
-
-
-
-
-  BlynkEdgent.begin();
-
-  timeraa.setInterval(1000, gyrorun);
-
-  //  timeraa.setInterval(200, secretrun);
-
-  timeraa.setInterval(766, switchrun);
-
-
-
-
-  timeraa.setInterval(810, interiorrun);
-
-
-
-
-
-  timeraa.setInterval(3550, warningrun);
-
-  timeraa.setInterval(20000, wifireconnect);
-  timeraa.setInterval(723, datasendpulse);
-
-
-  timeraa.setInterval(4053, bulbdatasend);
-
-
-  timerId = timeraa.setInterval((acofftime*1000), acrunn);
-
-
-  timerab.setInterval(3080, blynksyca);
-
-
-
-  timeraa.setInterval(980, timelock);
-
-
-
-  int na = 0;
-  while (na != 3000) {
-    na++;
-    delayMicroseconds(1);
-
-    yield();
-    BlynkEdgent.run();
-
-  }
-
-
-
-  if (esp_now_init() != 0) {
-    Serial.println("Error initializing ESP-NOW");
-    return;
-  }
-
-  esp_now_set_self_role(ESP_NOW_ROLE_COMBO);
-  esp_now_register_send_cb(OnDataSent);
-
-
-  
-  esp_now_add_peer(broadcastAddress, ESP_NOW_ROLE_COMBO, 1, NULL, 0);
-
-  esp_now_add_peer(broadcastAddress2, ESP_NOW_ROLE_COMBO, 1, NULL, 0);
-
-
-
-  
-  esp_now_register_recv_cb(OnDataRecv);
-
-
-  setSyncInterval(10 * 60); // Sync interval in seconds (10 minutes)
-  Mytone.Imperial_March(Speaker);
-
-//  WiFi.softAP(ap_ssid, ap_password);
-
-
-
-
-  wifi_promiscuous_enable(1);
-  wifi_set_channel(1);
-  wifi_promiscuous_enable(0);
-
-
-
-
-}
-void bulbdatasend(){
-
-
-
-
-  
-  bulbdat.dataa = hour();
-  bulbdat.datab = minute();
-  bulbdat.datac = second();
-  bulbdat.datad = whitel;
-  bulbdat.datae = redl;
-  bulbdat.dataf = greenl;
-  bulbdat.datag = bluel;
-  bulbdat.datah = twowhite;
-
-  bulbdat.datai = twored;
-  bulbdat.dataj = twogreen;
-  bulbdat.datak = twoblue;
-
-//
-//
-//
-  esp_now_send(broadcastAddress2, (uint8_t *) &bulbdat, sizeof(bulbdat));
-
-}
-void datasendpulse() {
-
-
-  myData.dataa = carmoving;
-  myData.datab = false;
-  myData.datac = dooropen;
-  myData.datad = lockcode;
-  myData.datae = unlockcode;
-
-
-
-
-  esp_now_send(broadcastAddress, (uint8_t *) &myData, sizeof(myData));
-
-
-}
-
-
-void loop() {
-  timeraa.run();
-
-  timeram.run();
-
-
-
-  if (WiFi.status() == WL_CONNECTED) {
-
-
-    timerab.run();
-
-    BlynkEdgent.run();
-
-  }
-
-}
-
-
-
-
-
-
-
-void wifireconnect() {
-
-  if (carmoving == 1 && digitalRead(D6) == 0) {
-
-    carmoving = 0;
-  }
-
-
-
-  if (carmoving == 1 && digitalRead(D7) == 0) {
-
-    carmoving = 0;
-  }
-
-
-
-
-  serp = 0;
-  r8 = 0;
-
-  if (WiFi.status() != WL_CONNECTED) {
-    WiFi.begin(ssidd, passs);
-  }
-}
-
-
-
-void OnDataRecv(uint8_t * mac, uint8_t *incomingData, uint8_t len) {
-  memcpy(&incomingReadings, incomingData, sizeof(incomingReadings));
-  //  Serial.print("Bytes received: ");
-  //  Serial.println(len);
-
-
-  lockposition = incomingReadings.dataa;   // mpu6050
-
-  acc = incomingReadings.datab;   //secret
-
-  accvoltage = incomingReadings.datac;   //door
-
-
-
-
-}
-
-
-
-void OnDataSent(uint8_t *mac_addr, uint8_t sendStatus) {
-  //  Serial.print("Last Packet Send Status: ");
-  if (sendStatus == 0) {
-    //    Serial.println("Delivery success");
-  }
-  else {
-    //    Serial.println("Delivery fail");
-  }
-}
-
-
-
-BLYNK_CONNECTED() {
-  // Synchronize time on connection
-  rtc.begin();
-
-}
-
-
-void lightsoffrun() {
-  digitalWrite(D0, HIGH);
-  ledonn = 0;
-
-}
-
-void interiorrun() {
-
-  if (lockposition == 1 && r18 == 0 && acc == 0 && iee == 0) {
-
-    ledonn = 1;
-
-//    if (hour() > 17) {
+      //    if (hour() > 17) {
       digitalWrite(D0, LOW);
       timeram.setTimeout(6000, lightsoffrun);
-//    }
-    r18 = 1;
+      //    }
+      r18 = 1;
 
 
-  }
+    }
 
 
 
-  if (lockposition == 0 && r18 == 1 && acc == 0 && iee == 0) {
-    ledonn = 1;
+    if (lockposition == 0 && r18 == 1 && acc == 0 && iee == 0) {
+      ledonn = 1;
 
-//    if (hour() > 17) {
+      //    if (hour() > 17) {
       digitalWrite(D0, LOW);
 
       timeram.setTimeout(6000, lightsoffrun);
-//    }
-    r18 = 0;
+      //    }
+      r18 = 0;
+
+
+    }
+
+
 
 
   }
@@ -776,28 +856,24 @@ void interiorrun() {
 
 
 
-}
+  BLYNK_WRITE(V7)
+  {
+    int pinValue = param.asInt(); // assigning incoming value from pin V1 to a variable
+    if (pinValue == HIGH && r8 == 0) {
 
 
+      r8 = 1;
+      ledonn = 1;
 
+      if (hour() > 17) {
+        digitalWrite(D0, LOW);
+        timeram.setTimeout(3000, lightsoffrun);
+      }
 
-BLYNK_WRITE(V7)
-{
-  int pinValue = param.asInt(); // assigning incoming value from pin V1 to a variable
-  if (pinValue == HIGH && r8 == 0) {
-
-
-    r8 = 1;
-    ledonn = 1;
-
-    if (hour() > 17) {
-      digitalWrite(D0, LOW);
-      timeram.setTimeout(3000, lightsoffrun);
     }
 
   }
 
-}
 
 
 
@@ -806,44 +882,40 @@ BLYNK_WRITE(V7)
 
 
 
+  BLYNK_WRITE(V9)
+  {
 
-BLYNK_WRITE(V9)
-{
+    terminal.println("lockposition");
 
-  terminal.println("lockposition");
+    terminal.println(lockposition);
+    terminal.println("acc");
 
-  terminal.println(lockposition);
-  terminal.println("acc");
+    terminal.println(acc);
+    terminal.println("accvoltage");
 
-  terminal.println(acc);
-  terminal.println("accvoltage");
+    terminal.println(accvoltage);
+    terminal.println("carmoving");
 
-  terminal.println(accvoltage);
-  terminal.println("carmoving");
+    terminal.println(carmoving);
+    terminal.println("lockcode");
 
-  terminal.println(carmoving);
-  terminal.println("lockcode");
+    terminal.println(lockcode);
+    terminal.println("unlockcode");
 
-  terminal.println(lockcode);
-  terminal.println("unlockcode");
+    terminal.println(unlockcode);
 
-  terminal.println(unlockcode);
+    terminal.println("dooropen");
 
-  terminal.println("dooropen");
+    terminal.println(dooropen);
 
-  terminal.println(dooropen);
+    terminal.println("hour");
+    terminal.println(hour());
 
-  terminal.println("hour");
-  terminal.println(hour());
-
-  terminal.flush();
-
-
-
-}
+    terminal.flush();
 
 
 
+  }
 
 
 
@@ -854,115 +926,118 @@ BLYNK_WRITE(V9)
 
 
 
-BLYNK_WRITE(V10)
-{
-  int pinValue = param.asInt(); // assigning incoming value from pin V1 to a variable
-  if (pinValue == HIGH) {
-
-    int  atk = 1;
 
 
-    if (lockposition == 1 && atk == 1) {
 
-      unlockcode++;
-      atk = 0;
+  BLYNK_WRITE(V10)
+  {
+    int pinValue = param.asInt(); // assigning incoming value from pin V1 to a variable
+    if (pinValue == HIGH) {
+
+      int  atk = 1;
+
+
+      if (lockposition == 1 && atk == 1) {
+
+        unlockcode++;
+        atk = 0;
+        Mytone.Tone_Up(Speaker);
+
+      }
+
+
+      if (lockposition == 0 && atk == 1) {
+        atk = 0;
+        lockcode++;
+        Mytone.Tone_Down(Speaker);
+
+      }
+
+
+
+    }
+
+  }
+
+
+
+  BLYNK_WRITE(V12)
+  {
+    actime = param.asInt(); // assigning incoming value from pin V1 to a variable
+
+
+    EEPROM.write(300, actime);
+
+
+
+  }
+
+
+
+
+  BLYNK_WRITE(V13)
+  {
+    acofftime = param.asInt(); // assigning incoming value from pin V1 to a variable
+
+    EEPROM.write(310, acofftime);
+
+    timeraa.deleteTimer(timerId);
+
+    timerId = timeraa.setInterval((acofftime * 1000), acrunn);
+
+
+  }
+
+
+
+
+
+
+
+
+  BLYNK_WRITE(V11)
+  {
+    int pinValue = param.asInt(); // assigning incoming value from pin V1 to a variable
+    if (pinValue == HIGH) {
+
+      accc = 1;
+
       Mytone.Tone_Up(Speaker);
 
     }
+    else {
 
 
-    if (lockposition == 0 && atk == 1) {
-      atk = 0;
-      lockcode++;
+
+      accc = 0;
+
+      digitalWrite(D5, HIGH);
       Mytone.Tone_Down(Speaker);
-
     }
 
+  }
 
+
+
+
+  BLYNK_WRITE(V0)
+  {
+    int pinValue = param.asInt(); // assigning incoming value from pin V1 to a variable
+    if (pinValue == HIGH) {
+      lockcode++;
+
+      Mytone.Tone_Down(Speaker);
+    }
 
   }
 
-}
+  BLYNK_WRITE(V1)
+  {
+    int pinValue = param.asInt(); // assigning incoming value from pin V1 to a variable
+    if (pinValue == HIGH) {
+      unlockcode++;
 
-
-
-BLYNK_WRITE(V12)
-{
-  actime = param.asInt(); // assigning incoming value from pin V1 to a variable
-
-
-  EEPROM.write(300, actime);
-
-
-  
-}
-
-
-
-
-BLYNK_WRITE(V13)
-{
-  acofftime = param.asInt(); // assigning incoming value from pin V1 to a variable
-
-  EEPROM.write(310, acofftime);
-
-  timeraa.deleteTimer(timerId);
-
-  timerId = timeraa.setInterval((acofftime*1000), acrunn);
-
-  
-}
-
-
-
-
-
-
-
-
-BLYNK_WRITE(V11)
-{
-  int pinValue = param.asInt(); // assigning incoming value from pin V1 to a variable
-  if (pinValue == HIGH) {
-
-    accc = 1;
-
-    Mytone.Tone_Up(Speaker);
+      Mytone.Tone_Up(Speaker);
+    }
 
   }
-  else {
-
-
-
-    accc = 0;
-
-    digitalWrite(D5, HIGH);
-    Mytone.Tone_Down(Speaker);
-  }
-
-}
-
-
-
-
-BLYNK_WRITE(V0)
-{
-  int pinValue = param.asInt(); // assigning incoming value from pin V1 to a variable
-  if (pinValue == HIGH) {
-    lockcode++;
-
-    Mytone.Tone_Down(Speaker);
-  }
-
-}
-
-BLYNK_WRITE(V1)
-{
-  int pinValue = param.asInt(); // assigning incoming value from pin V1 to a variable
-  if (pinValue == HIGH) {
-    unlockcode++;
-
-    Mytone.Tone_Up(Speaker);
-  }
-
-}
