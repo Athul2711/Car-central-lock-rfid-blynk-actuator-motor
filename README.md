@@ -1,5 +1,4 @@
 # Car-central-lock-rfid-blynk-actuator-motor
-# #Project no longer maintained
 
 # #Features
 
@@ -10,6 +9,7 @@ keyless lock
 RGB lighting
 Climate cnmtrol AC
 
+# Project no longer maintained
 
 
 
