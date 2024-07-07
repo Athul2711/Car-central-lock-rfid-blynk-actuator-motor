@@ -1,6 +1,6 @@
 # Car-central-lock-rfid-blynk-actuator-motor
 
-# #Features
+# Features
 
 Car central locking with iot and scheduling
 Smart Engine RPM meter
